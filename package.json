@@ -6,7 +6,25 @@
   "scripts": {
     "start": "electron .",
     "dev": "NODE_ENV=development electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "build-win": "node build-installer.js"
+  },
+  "build": {
+    "appId": "com.quickmarkets.app",
+    "productName": "QuickMarkets",
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "keywords": [
     "electron",
@@ -23,5 +41,8 @@
     "chart.js": "^4.5.0",
     "electron": "^37.3.1",
     "electron-store": "^10.1.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^26.0.12"
   }
 }
