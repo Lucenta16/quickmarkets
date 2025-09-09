@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickMarkets</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">QuickMarkets</div>
+      <div class="clock-container">
+        <div id="clock" class="clock"></div>
+        <div id="date" class="date"></div>
+      </div>
+      <div class="controls">
+        <button id="settings-btn" class="icon-button">⚙️</button>
+        <button id="fullscreen-btn" class="icon-button">⛶</button>
+        <button id="screensaver-btn" class="icon-button">🖥️</button>
+      </div>
+    </header>
+
+    <main class="market-grid" id="market-grid">
+      <!-- Market cards will be dynamically inserted here -->
+    </main>
+
+    <div id="settings-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <span class="close-btn">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="settings-section">
+            <h3>Display Settings</h3>
+            <div class="setting-item">
+              <label for="refresh-rate">Refresh Rate (seconds):</label>
+              <input type="number" id="refresh-rate" min="10" max="300" value="30">
+            </div>
+            <div class="setting-item">
+              <label>Grid Size:</label>
+              <div class="radio-group">
+                <input type="radio" id="grid-small" name="grid-size" value="small">
+                <label for="grid-small">Small</label>
+                <input type="radio" id="grid-medium" name="grid-size" value="medium" checked>
+                <label for="grid-medium">Medium</label>
+                <input type="radio" id="grid-large" name="grid-size" value="large">
+                <label for="grid-large">Large</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3>Watchlist</h3>
+            <div class="watchlist-manager">
+              <div class="watchlist-items" id="watchlist-items">
+                <!-- Watchlist items will be dynamically inserted here -->
+              </div>
+              <div class="add-instrument">
+                <input type="text" id="new-symbol" placeholder="Symbol (e.g., AAPL)">
+                <select id="instrument-type">
+                  <option value="stock">Stock</option>
+                  <option value="crypto">Crypto</option>
+                  <option value="forex">Forex</option>
+                </select>
+                <button id="add-instrument-btn">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="save-settings-btn" class="primary-btn">Save Settings</button>
+          <button id="cancel-settings-btn" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-bar" class="status-bar">
+      <span id="status-message">Ready</span>
+      <span id="connection-status" class="connected">●</span>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
