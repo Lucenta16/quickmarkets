@@ -8,17 +8,26 @@ builder.build({
     appId: 'com.quickmarkets.app',
     productName: 'QuickMarkets',
     win: {
-      target: ['nsis'],
+      target: ['portable'],
+      artifactName: 'QuickMarkets-${version}.exe'
     },
-    nsis: {
-      oneClick: false,
-      allowToChangeInstallationDirectory: true,
-      createDesktopShortcut: true,
-      createStartMenuShortcut: true
+    portable: {
+      artifactName: 'QuickMarkets-Portable-${version}.exe'
     },
     directories: {
       output: 'release-builds'
-    }
+    },
+    // Disable code signing to avoid symbolic link issues
+    forceCodeSigning: false,
+    signingHashAlgorithms: null,
+    signDlls: false,
+    sign: null,
+    // Avoid Mac-specific files that cause symbolic link errors
+    files: [
+      "**/*",
+      "!**/*.{dylib}"
+    ],
+    asar: true
   }
 })
   .then(() => {

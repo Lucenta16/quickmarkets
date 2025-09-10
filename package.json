@@ -9,22 +9,26 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "build-win": "node build-installer.js"
+    "build-win": "node build-installer.js",
+    "create-screensaver": "node create-screensaver.js"
   },
   "build": {
     "appId": "com.quickmarkets.app",
     "productName": "QuickMarkets",
     "win": {
       "target": [
-        "nsis"
-      ]
+        "portable"
+      ],
+      "artifactName": "QuickMarkets-${version}.exe"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+    "portable": {
+      "artifactName": "QuickMarkets-Portable-${version}.exe"
+    },
+    "files": [
+      "**/*",
+      "!**/*.{dylib}"
+    ],
+    "asar": true
   },
   "keywords": [
     "electron",
