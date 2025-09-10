@@ -20,26 +20,91 @@ const defaultSettings = {
 let mainWindow;
 
 function createWindow() {
-  // Check if running in screensaver mode
-  const isScreensaverMode = process.argv.includes('--screensaver');
-  console.log('Command line arguments:', process.argv);
-  console.log('Screensaver mode enabled:', isScreensaverMode);
+  // Check for Windows screensaver command-line arguments
+  // /s = Run the screensaver (fullscreen mode)
+  // /c = Show the configuration dialog
+  // /p = Preview in a small window
   
-  // Create the browser window
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    },
-    backgroundColor: '#121212', // Dark background for the app
-    show: false, // Don't show until ready-to-show
-    frame: !isScreensaverMode, // No frame in screensaver mode
-    fullscreen: isScreensaverMode, // Fullscreen in screensaver mode
-    kiosk: isScreensaverMode // Kiosk mode prevents easy exit in screensaver mode
-  });
+  // Map Windows screensaver args to our internal flags
+  const args = process.argv;
+  let isScreensaverMode = args.includes('--screensaver');
+  let isConfigMode = false;
+  let isPreviewMode = false;
+  
+  // Check for Windows screensaver arguments
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i].toLowerCase();
+    if (arg === '/s') {
+      isScreensaverMode = true;
+    } else if (arg === '/c') {
+      isConfigMode = true;
+    } else if (arg === '/p') {
+      isPreviewMode = true;
+      // The next argument should be the preview window handle
+      const previewHandle = args[i + 1];
+      console.log('Preview handle:', previewHandle);
+    }
+  }
+  
+  console.log('Command line arguments:', process.argv);
+  console.log('Screensaver mode:', isScreensaverMode);
+  console.log('Config mode:', isConfigMode);
+  console.log('Preview mode:', isPreviewMode);
+  
+  // Create the browser window with different settings based on mode
+  if (isConfigMode) {
+    // Configuration dialog mode
+    mainWindow = new BrowserWindow({
+      width: 600,
+      height: 700,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
+      },
+      backgroundColor: '#121212',
+      show: false,
+      frame: true,
+      fullscreen: false,
+      resizable: false,
+      maximizable: false,
+      minimizable: true,
+      title: 'QuickMarkets Screensaver Settings'
+    });
+  } else if (isPreviewMode) {
+    // Preview mode (small window for screensaver selection dialog)
+    mainWindow = new BrowserWindow({
+      width: 150,
+      height: 100,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
+      },
+      backgroundColor: '#121212',
+      show: false,
+      frame: false,
+      fullscreen: false,
+      resizable: false,
+      alwaysOnTop: true
+    });
+  } else {
+    // Normal screensaver mode
+    mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
+      },
+      backgroundColor: '#121212', // Dark background for the app
+      show: false, // Don't show until ready-to-show
+      frame: !isScreensaverMode, // No frame in screensaver mode
+      fullscreen: isScreensaverMode, // Fullscreen in screensaver mode
+      kiosk: isScreensaverMode // Kiosk mode prevents easy exit in screensaver mode
+    });
+  }
 
   // Load the index.html of the app
   // Using index.html which loads renderer.js instead of browser-index.html
@@ -91,7 +156,15 @@ ipcMain.handle('save-settings', (event, settings) => {
   return true;
 });
 
-// IPC handler for screensaver mode check
+// IPC handlers for screensaver mode checks
 ipcMain.handle('is-screensaver-mode', () => {
-  return process.argv.includes('--screensaver');
+  return process.argv.includes('--screensaver') || process.argv.includes('/s');
+});
+
+ipcMain.handle('is-config-mode', () => {
+  return process.argv.includes('/c');
+});
+
+ipcMain.handle('is-preview-mode', () => {
+  return process.argv.includes('/p');
 });

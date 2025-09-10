@@ -63,23 +63,38 @@ class QuickMarketsApp {
       // Load settings from Electron store
       await this.loadSettings();
       
-      // Check if we're in screensaver mode
+      // Check which mode we're in
       if (window.electronAPI) {
         this.isScreensaverMode = await window.electronAPI.isScreensaverMode();
-        console.log('Screensaver mode check result:', this.isScreensaverMode);
+        this.isConfigMode = await window.electronAPI.isConfigMode();
+        this.isPreviewMode = await window.electronAPI.isPreviewMode();
+        
+        console.log('Mode check results:');
+        console.log('- Screensaver mode:', this.isScreensaverMode);
+        console.log('- Config mode:', this.isConfigMode);
+        console.log('- Preview mode:', this.isPreviewMode);
       }
       
-      // Initialize UI
-      this.uiService.initUI();
-      
-      // Auto-enter screensaver mode if launched with flag
-      if (this.isScreensaverMode) {
-        console.log('Auto-entering screensaver mode from command line flag');
-        // Use a shorter timeout to ensure it runs quickly on startup
-        setTimeout(() => {
-          console.log('Activating screensaver mode now');
-          this.uiService.toggleScreensaverMode();
-        }, 500);
+      // Initialize UI based on mode
+      if (this.isConfigMode) {
+        // Show only settings panel for configuration mode
+        this.uiService.initConfigUI();
+      } else if (this.isPreviewMode) {
+        // Show minimal preview UI
+        this.uiService.initPreviewUI();
+      } else {
+        // Normal UI initialization
+        this.uiService.initUI();
+        
+        // Auto-enter screensaver mode if launched with flag
+        if (this.isScreensaverMode) {
+          console.log('Auto-entering screensaver mode');
+          // Use a shorter timeout to ensure it runs quickly on startup
+          setTimeout(() => {
+            console.log('Activating screensaver mode now');
+            this.uiService.toggleScreensaverMode();
+          }, 500);
+        }
       }
       this.uiService.updateGridSize(this.settings.gridSize);
       
@@ -257,22 +272,205 @@ class QuickMarketsApp {
     return true;
   }
 }
-
-// UI Service class
 class UiService {
   constructor(app) {
     this.app = app;
-    this.marketGrid = document.getElementById('market-grid');
-    this.clockElement = document.getElementById('clock');
-    this.dateElement = document.getElementById('date');
-    this.statusMessage = document.getElementById('status-message');
-    this.connectionStatus = document.getElementById('connection-status');
-    this.settingsModal = document.getElementById('settings-modal');
-    this.settingsBtn = document.getElementById('settings-btn');
-    this.fullscreenBtn = document.getElementById('fullscreen-btn');
-    this.saveSettingsBtn = document.getElementById('save-settings-btn');
-    this.cancelSettingsBtn = document.getElementById('cancel-settings-btn');
-    this.addInstrumentBtn = document.getElementById('add-instrument-btn');
+    this.initElements();
+  }
+  
+  // Initialize UI for configuration mode (Windows screensaver /c flag)
+  initConfigUI() {
+    console.log('Initializing configuration UI');
+    
+    // Hide main app container
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+      appContainer.style.display = 'none';
+    }
+    
+    // Create settings-only UI
+    const configContainer = document.createElement('div');
+    configContainer.className = 'config-container';
+    configContainer.innerHTML = `
+      <div class="config-header">
+        <h1>QuickMarkets Screensaver Settings</h1>
+      </div>
+      <div class="config-body">
+        <div class="settings-section">
+          <h3>Display Settings</h3>
+          <div class="setting-item">
+            <label for="config-refresh-rate">Refresh Rate (seconds):</label>
+            <input type="number" id="config-refresh-rate" min="10" max="300" value="${this.app.settings.refreshInterval / 1000}">
+          </div>
+          <div class="setting-item">
+            <label>Grid Size:</label>
+            <div class="radio-group">
+              <input type="radio" id="config-grid-small" name="config-grid-size" value="small" ${this.app.settings.gridSize === 'small' ? 'checked' : ''}>
+              <label for="config-grid-small">Small</label>
+              <input type="radio" id="config-grid-medium" name="config-grid-size" value="medium" ${this.app.settings.gridSize === 'medium' ? 'checked' : ''}>
+              <label for="config-grid-medium">Medium</label>
+              <input type="radio" id="config-grid-large" name="config-grid-size" value="large" ${this.app.settings.gridSize === 'large' ? 'checked' : ''}>
+              <label for="config-grid-large">Large</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Watchlist</h3>
+          <div class="watchlist-manager">
+            <div class="watchlist-items" id="config-watchlist-items">
+              <!-- Watchlist items will be dynamically inserted here -->
+            </div>
+            <div class="add-instrument">
+              <input type="text" id="config-new-symbol" placeholder="Symbol (e.g., AAPL)">
+              <select id="config-instrument-type">
+                <option value="stock">Stock</option>
+                <option value="crypto">Crypto</option>
+                <option value="forex">Forex</option>
+              </select>
+              <button id="config-add-instrument-btn">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="config-footer">
+        <button id="config-save-btn" class="primary-btn">Save Settings</button>
+        <button id="config-cancel-btn" class="secondary-btn">Cancel</button>
+      </div>
+    `;
+    
+    document.body.appendChild(configContainer);
+    
+    // Render watchlist items
+    this.renderConfigWatchlist();
+    
+    // Add event listeners
+    document.getElementById('config-save-btn').addEventListener('click', () => this.saveConfigSettings());
+    document.getElementById('config-cancel-btn').addEventListener('click', () => window.close());
+    document.getElementById('config-add-instrument-btn').addEventListener('click', () => this.addConfigInstrument());
+  }
+  
+  // Initialize UI for preview mode (Windows screensaver /p flag)
+  initPreviewUI() {
+    console.log('Initializing preview UI');
+    
+    // Hide main app container
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+      appContainer.style.display = 'none';
+    }
+    
+    // Create minimal preview UI
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'preview-container';
+    previewContainer.innerHTML = `
+      <div class="preview-content">
+        <h2>QuickMarkets</h2>
+        <div class="preview-chart"></div>
+      </div>
+    `;
+    
+    document.body.appendChild(previewContainer);
+    
+    // Add simple animation for preview
+    const previewChart = document.querySelector('.preview-chart');
+    if (previewChart) {
+      previewChart.innerHTML = `
+        <svg width="100" height="50" viewBox="0 0 100 50">
+          <path d="M0,25 Q25,50 50,25 T100,25" stroke="${Math.random() > 0.5 ? '#4caf50' : '#f44336'}" fill="none" stroke-width="2" />
+        </svg>
+      `;
+    }
+  }
+  
+  // Render watchlist items in config mode
+  renderConfigWatchlist() {
+    const watchlistItems = document.getElementById('config-watchlist-items');
+    if (!watchlistItems) return;
+    
+    watchlistItems.innerHTML = '';
+    
+    this.app.settings.watchlist.forEach(instrument => {
+      const item = document.createElement('div');
+      item.className = 'watchlist-item';
+      
+      item.innerHTML = `
+        <div>
+          <span class="watchlist-symbol">${instrument.symbol}</span>
+          <span class="watchlist-type">${instrument.type}</span>
+        </div>
+        <button class="remove-btn" data-symbol="${instrument.symbol}">✕</button>
+      `;
+      
+      watchlistItems.appendChild(item);
+      
+      // Add event listener for remove button
+      const removeBtn = item.querySelector('.remove-btn');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => {
+          this.app.removeFromWatchlist(removeBtn.dataset.symbol);
+          this.renderConfigWatchlist();
+        });
+      }
+    });
+  }
+  
+  // Add instrument in config mode
+  addConfigInstrument() {
+    const symbolInput = document.getElementById('config-new-symbol');
+    const typeSelect = document.getElementById('config-instrument-type');
+    
+    if (symbolInput && typeSelect) {
+      const symbol = symbolInput.value.trim().toUpperCase();
+      const type = typeSelect.value;
+      
+      if (symbol) {
+        const exists = this.app.settings.watchlist.some(item => item.symbol === symbol);
+        
+        if (!exists) {
+          this.app.settings.watchlist.push({ symbol, type });
+          this.renderConfigWatchlist();
+          symbolInput.value = '';
+        } else {
+          alert('This symbol is already in your watchlist');
+        }
+      }
+    }
+  }
+  
+  // Save settings in config mode
+  saveConfigSettings() {
+    // Get values from config UI
+    const refreshRate = document.getElementById('config-refresh-rate').value;
+    const gridSizeElements = document.getElementsByName('config-grid-size');
+    let gridSize = 'medium';
+    
+    for (const element of gridSizeElements) {
+      if (element.checked) {
+        gridSize = element.value;
+        break;
+      }
+    }
+    
+    // Update settings
+    const newSettings = {
+      refreshRate: parseInt(refreshRate, 10),
+      gridSize: gridSize,
+      watchlist: [...this.app.settings.watchlist]
+    };
+    
+    // Save settings
+    if (window.electronAPI) {
+      window.electronAPI.saveSettings(newSettings)
+        .then(() => {
+          console.log('Settings saved successfully');
+          window.close();
+        })
+        .catch(error => {
+          console.error('Error saving settings:', error);
+          alert('Failed to save settings. Please try again.');
+        });
+    }
     this.watchlistItems = document.getElementById('watchlist-items');
   }
 
