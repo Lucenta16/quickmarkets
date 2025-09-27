@@ -1,0 +1,3 @@
+@echo off
+echo Starting QuickMarkets Screensaver...
+npx electron . /s

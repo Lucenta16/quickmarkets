@@ -1,0 +1,3 @@
+@echo off
+echo Starting QuickMarkets Configuration...
+npx electron . /c

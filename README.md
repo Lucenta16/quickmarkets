@@ -40,6 +40,22 @@ npm install
 ```
 
 3. Run the application in different modes:
+
+**On Windows:**
+```bash
+# Run in screensaver mode (fullscreen)
+run-screensaver.bat
+
+# Run in configuration mode (settings dialog)
+run-config.bat
+
+# Or using npm commands:
+npm start
+npm run config
+npm run preview
+```
+
+**On Mac/Linux:**
 ```bash
 # Run in screensaver mode (fullscreen)
 npm start

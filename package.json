@@ -4,13 +4,13 @@
   "description": "Desktop screensaver application that displays real-time financial market data",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron . /s",
-    "config": "electron . /c",
-    "preview": "electron . /p",
-    "dev": "NODE_ENV=development electron .",
+    "start": "npx electron . /s",
+    "config": "npx electron . /c",
+    "preview": "npx electron . /p",
+    "dev": "cross-env NODE_ENV=development npx electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "pack": "npx electron-builder --dir",
+    "dist": "npx electron-builder",
     "build-win": "node build-installer.js",
     "create-screensaver": "node create-screensaver.js"
   },
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "electron": "^37.3.1",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "cross-env": "^7.0.3"
   }
 }
