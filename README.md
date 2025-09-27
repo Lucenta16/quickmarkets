@@ -26,9 +26,11 @@ A desktop screensaver application that displays real-time financial market data 
 
 ## Installation
 
+### Development Testing
+
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/quickmarkets.git
+git clone https://github.com/Lucenta16/quickmarkets.git
 cd quickmarkets
 ```
 
@@ -37,10 +39,31 @@ cd quickmarkets
 npm install
 ```
 
-3. Start the application:
+3. Run the application in different modes:
 ```bash
+# Run in screensaver mode (fullscreen)
 npm start
+
+# Run in configuration mode (settings dialog)
+npm run config
+
+# Run in preview mode (small window)
+npm run preview
 ```
+
+### Windows Screensaver Installation
+
+1. Build the screensaver file:
+```bash
+npm run build-win
+npm run create-screensaver
+```
+
+2. Copy the generated `QuickMarkets.scr` file from the `release-builds` folder to `C:\Windows\System32\`
+
+3. Right-click on your desktop, select "Personalize" → "Lock screen" → "Screen saver settings"
+
+4. Select "QuickMarkets" from the dropdown menu
 
 ## Architecture
 
@@ -66,23 +89,32 @@ The application is built with a modular architecture consisting of three main co
 
 ## Usage
 
-### Adding Instruments
+### Windows Screensaver Settings
 
-1. Click the settings icon (⚙️) in the top-right corner
-2. In the Watchlist section, enter a symbol (e.g., AAPL)
+1. Right-click on your desktop and select "Personalize"
+2. Go to "Lock screen" and click "Screen saver settings"
+3. Select "QuickMarkets" from the dropdown menu
+4. Click "Settings" to configure the screensaver:
+
+### Configuring the Screensaver
+
+#### Adding Instruments
+1. In the Settings dialog, go to the Watchlist section
+2. Enter a symbol (e.g., AAPL)
 3. Select the instrument type (stock, crypto, forex)
 4. Click "Add"
 
-### Changing Display Settings
+#### Changing Display Settings
+1. Adjust the refresh rate (in seconds)
+2. Select your preferred grid size (small, medium, large)
+3. Click "Save Settings"
 
-1. Click the settings icon (⚙️)
-2. Adjust the refresh rate (in seconds)
-3. Select your preferred grid size (small, medium, large)
-4. Click "Save Settings"
+### Screensaver Activation
 
-### Fullscreen Mode
+The screensaver will activate automatically based on your Windows screensaver settings (idle time). You can also:
 
-Click the fullscreen icon (⛶) to toggle fullscreen mode.
+1. Click "Preview" in the Windows screensaver settings dialog
+2. Press Win+L to lock your computer and activate the screensaver
 
 ## Development
 
@@ -106,10 +138,24 @@ quickmarkets/
 ### Building for Production
 
 For Windows screensaver deployment:
-1. Build the Electron app
-2. Rename the executable to have a .scr extension
-3. Place in the Windows system directory or register it as a screensaver
+
+```bash
+# Build the portable executable
+npm run build-win
+
+# Create the .scr file
+npm run create-screensaver
+```
+
+This will generate two files in the `release-builds` folder:
+1. `QuickMarkets-1.0.0.exe` - The portable executable
+2. `QuickMarkets.scr` - The Windows screensaver file
+
+To install the screensaver:
+1. Copy `QuickMarkets.scr` to `C:\Windows\System32\`
+2. Right-click on desktop → Personalize → Lock screen → Screen saver settings
+3. Select "QuickMarkets" from the dropdown
 
 ## License
 
-ISC
+MIT

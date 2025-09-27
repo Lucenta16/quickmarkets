@@ -4,7 +4,9 @@
   "description": "Desktop screensaver application that displays real-time financial market data",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "electron . /s",
+    "config": "electron . /c",
+    "preview": "electron . /p",
     "dev": "NODE_ENV=development electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "electron-builder --dir",
